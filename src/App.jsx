@@ -123,7 +123,7 @@ function useInView(threshold = 0.1) {
     );
     if (ref.current) obs.observe(ref.current);
     return () => obs.disconnect();
-  });
+  }, []);
   return [ref, inView];
 }
 
@@ -190,6 +190,7 @@ function GlassCard({ children, style = {}, hover = true, className = "" }) {
 export default function App() {
   const [activeNav, setActiveNav] = useState("About");
   const [heroVisible, setHeroVisible] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     setTimeout(() => setHeroVisible(true), 150);
@@ -210,6 +211,7 @@ export default function App() {
       const y = el.getBoundingClientRect().top + window.scrollY - 62;
       window.scrollTo({ top: y, behavior: "smooth" });
     }
+    setMenuOpen(false);
   };
 
   return (
@@ -256,29 +258,44 @@ export default function App() {
         /* ── NAVBAR ── */
         .navbar {
           position: fixed; top: 0; left: 0; right: 0; z-index: 200;
-          height: 58px;
+          height: 56px;
           display: flex; align-items: center; justify-content: space-between;
-          padding: 0 4%;
-          background: rgba(18,14,28,0.94);
+          padding: 0 28px;
+          background: rgba(18,14,28,0.96);
           backdrop-filter: blur(22px);
           -webkit-backdrop-filter: blur(22px);
           border-bottom: 1px solid rgba(180,130,60,0.2);
-          box-shadow: 0 2px 24px rgba(0,0,0,0.2);
+          box-shadow: 0 2px 24px rgba(0,0,0,0.22);
+          gap: 0;
         }
         .logo {
           font-family: 'Cormorant Garamond', serif;
-          font-size: 19px; font-weight: 700; color: #f5ead0;
+          font-size: 18px; font-weight: 700; color: #f5ead0;
           letter-spacing: 0.02em; flex-shrink: 0; cursor: pointer;
+          margin-right: 20px;
         }
         .logo span { color: #f59e0b; }
 
-        .nav-links { display: flex; gap: 2px; align-items: center; }
+        .nav-links {
+          display: flex;
+          align-items: center;
+          gap: 0px;
+          flex: 1;
+          justify-content: center;
+        }
         .nav-item {
-          padding: 5px 11px; border-radius: 6px;
-          font-size: 12.5px; font-weight: 500; letter-spacing: 0.02em;
-          color: #a89880; cursor: pointer; transition: all 0.2s;
-          font-family: 'DM Sans', sans-serif; white-space: nowrap;
+          padding: 5px 10px;
+          border-radius: 6px;
+          font-size: 12px;
+          font-weight: 500;
+          letter-spacing: 0.01em;
+          color: #a89880;
+          cursor: pointer;
+          transition: all 0.2s;
+          font-family: 'DM Sans', sans-serif;
+          white-space: nowrap;
           border: 1px solid transparent;
+          flex-shrink: 0;
         }
         .nav-item:hover { color: #f5ead0; background: rgba(255,255,255,0.07); }
         .nav-item.active {
@@ -287,13 +304,13 @@ export default function App() {
           border-color: rgba(245,158,11,0.2);
         }
         .nav-cta {
-          padding: 7px 18px; flex-shrink: 0;
+          padding: 6px 16px; flex-shrink: 0;
           background: linear-gradient(135deg, #f59e0b, #d97706);
           color: #1c1206; border-radius: 8px;
-          font-size: 13px; font-weight: 600; cursor: pointer; border: none;
+          font-size: 12px; font-weight: 600; cursor: pointer; border: none;
           letter-spacing: 0.02em; transition: all 0.2s;
-          box-shadow: 0 2px 12px rgba(245,158,11,0.3); margin-left: 8px;
-          font-family: 'DM Sans', sans-serif;
+          box-shadow: 0 2px 12px rgba(245,158,11,0.3); margin-left: 12px;
+          font-family: 'DM Sans', sans-serif; white-space: nowrap;
         }
         .nav-cta:hover { transform: translateY(-1px); box-shadow: 0 4px 20px rgba(245,158,11,0.4); }
 
@@ -362,12 +379,101 @@ export default function App() {
 
         /* ── RESPONSIVE ── */
         @media (max-width: 900px) {
-          .nav-links { display: none !important; }
-          .hero-cols, .contact-cols { flex-direction: column !important; }
+          .hero-cols { flex-direction: column !important; }
+          .hero-stack-card { display: none !important; }
+          .contact-cols { grid-template-columns: 1fr !important; }
           .two-col, .three-col { grid-template-columns: 1fr !important; }
           .four-col { grid-template-columns: repeat(2,1fr) !important; }
-          .hero-stack-card { display: none !important; }
         }
+        @media (max-width: 600px) {
+          .nav-links { display: none !important; }
+          .nav-cta { display: none !important; }
+        }
+
+        /* ── HAMBURGER ── */
+        .hamburger {
+          display: none;
+          flex-direction: column;
+          justify-content: center;
+          gap: 5px;
+          cursor: pointer;
+          padding: 6px;
+          border-radius: 8px;
+          transition: background 0.2s;
+          background: transparent;
+          border: none;
+          margin-left: auto;
+        }
+        .hamburger:hover { background: rgba(255,255,255,0.08); }
+        .hamburger-line {
+          width: 22px; height: 2px;
+          background: #f5ead0;
+          border-radius: 2px;
+          transition: all 0.3s ease;
+          display: block;
+        }
+        .hamburger.open .hamburger-line:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+        .hamburger.open .hamburger-line:nth-child(2) { opacity: 0; transform: scaleX(0); }
+        .hamburger.open .hamburger-line:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+        @media (max-width: 600px) {
+          .hamburger { display: flex !important; }
+        }
+
+        /* ── MOBILE MENU DRAWER ── */
+        .mobile-menu {
+          position: fixed;
+          top: 56px; left: 0; right: 0;
+          z-index: 199;
+          background: rgba(18,14,28,0.98);
+          backdrop-filter: blur(24px);
+          -webkit-backdrop-filter: blur(24px);
+          border-bottom: 1px solid rgba(180,130,60,0.2);
+          padding: 12px 20px 20px;
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+          transform: translateY(-110%);
+          transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+          box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+        .mobile-menu.open { transform: translateY(0); }
+
+        .mobile-nav-item {
+          padding: 12px 16px;
+          border-radius: 10px;
+          font-size: 15px;
+          font-weight: 500;
+          color: #a89880;
+          cursor: pointer;
+          transition: all 0.2s;
+          font-family: 'DM Sans', sans-serif;
+          border: 1px solid transparent;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+        }
+        .mobile-nav-item:hover { color: #f5ead0; background: rgba(255,255,255,0.06); }
+        .mobile-nav-item.active {
+          color: #f59e0b;
+          background: rgba(245,158,11,0.1);
+          border-color: rgba(245,158,11,0.2);
+        }
+        .mobile-hire-btn {
+          margin-top: 8px;
+          padding: 12px 16px;
+          background: linear-gradient(135deg, #f59e0b, #d97706);
+          color: #1c1206;
+          border-radius: 10px;
+          font-size: 15px;
+          font-weight: 600;
+          cursor: pointer;
+          border: none;
+          font-family: 'DM Sans', sans-serif;
+          text-align: center;
+          transition: opacity 0.2s;
+        }
+        .mobile-hire-btn:hover { opacity: 0.9; }
       `}</style>
 
       {/* ── BACKGROUND LAYERS ── */}
@@ -395,7 +501,35 @@ export default function App() {
         </div>
 
         <button className="nav-cta" onClick={() => scrollTo("contact")}>Hire Me</button>
+
+        {/* Hamburger — mobile only */}
+        <button
+          className={`hamburger ${menuOpen ? "open" : ""}`}
+          onClick={() => setMenuOpen(o => !o)}
+          aria-label="Toggle menu"
+        >
+          <span className="hamburger-line" />
+          <span className="hamburger-line" />
+          <span className="hamburger-line" />
+        </button>
       </nav>
+
+      {/* Mobile menu drawer */}
+      <div className={`mobile-menu ${menuOpen ? "open" : ""}`}>
+        {NAV_LINKS.map(l => (
+          <div
+            key={l}
+            className={`mobile-nav-item ${activeNav === l ? "active" : ""}`}
+            onClick={() => scrollTo(l)}
+          >
+            {l}
+            <span style={{ fontSize: "12px", opacity: 0.4 }}>→</span>
+          </div>
+        ))}
+        <button className="mobile-hire-btn" onClick={() => scrollTo("contact")}>
+          Hire Me
+        </button>
+      </div>
 
       <div className="content">
 
